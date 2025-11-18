@@ -38,6 +38,9 @@ builder.Services.AddObservability(builder.Configuration);
 
 var app = builder.Build();
 
+// Seed database on startup (async operation properly awaited before handling requests)
+await SeedDatabaseAsync(app.Services);
+
 // Configure the HTTP request pipeline.
 
 // Serilog request logging (before other middleware)
@@ -56,5 +59,14 @@ app.MapControllers();
 
 app.Run();
 
-// Make Program class accessible to integration tests
+// Seed database helper method
+static async Task SeedDatabaseAsync(IServiceProvider services)
+{
+    using var scope = services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<ICatalogContext>();
+    await CatalogContextSeed.SeedDataAsync(context.Products);
+}
+
+// Make Program class accessible to integration tests for WebApplicationFactory
+// This enables integration tests to spin up the API in-memory without modifications
 public partial class Program { }

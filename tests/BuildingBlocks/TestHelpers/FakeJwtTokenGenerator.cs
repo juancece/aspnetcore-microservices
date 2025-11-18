@@ -6,14 +6,40 @@ using System.Security.Cryptography;
 namespace TestHelpers
 {
     /// <summary>
-    /// Generates fake JWT tokens for testing authentication without a real IdP
+    /// Generates fake JWT tokens for testing authentication without a real IdP.
+    /// 
+    /// ⚠️ WARNING - TESTING ONLY:
+    /// This class is STRICTLY for automated testing purposes and should NEVER be used in production.
+    /// It generates cryptographic keys in-memory without secure storage or rotation.
+    /// 
+    /// RESOURCE MANAGEMENT:
+    /// - Implements IDisposable to properly clean up RSA cryptographic resources
+    /// - MUST be disposed after use to prevent memory leaks
+    /// - Recommended pattern: Use in 'using' statement or dispose explicitly in test teardown
+    /// 
+    /// USAGE:
+    /// ```csharp
+    /// // Option 1: Using statement (preferred)
+    /// using var tokenGenerator = new FakeJwtTokenGenerator();
+    /// var token = tokenGenerator.GenerateToken("user1", "id1", new[] { "Admin" });
+    /// 
+    /// // Option 2: xUnit IClassFixture (for shared instance across tests)
+    /// public class MyTests : IClassFixture<FakeJwtTokenGenerator>, IDisposable
+    /// {
+    ///     private readonly FakeJwtTokenGenerator _tokenGen;
+    ///     public MyTests(FakeJwtTokenGenerator tokenGen) => _tokenGen = tokenGen;
+    ///     public void Dispose() => _tokenGen.Dispose();
+    /// }
+    /// ```
     /// </summary>
-    public class FakeJwtTokenGenerator
+    public class FakeJwtTokenGenerator : IDisposable
     {
+        private readonly RSA _rsa;
         private readonly RsaSecurityKey _securityKey;
         private readonly SigningCredentials _signingCredentials;
         private readonly string _issuer;
         private readonly string _audience;
+        private bool _disposed;
 
         public FakeJwtTokenGenerator(
             string issuer = "https://fake-idp.local",
@@ -23,8 +49,10 @@ namespace TestHelpers
             _audience = audience;
 
             // Generate RSA key pair for signing tokens
-            var rsa = RSA.Create(2048);
-            _securityKey = new RsaSecurityKey(rsa);
+            // SECURITY: This is a test-only key generated in memory
+            // Production systems must use secure key management (Azure Key Vault, AWS KMS, etc.)
+            _rsa = RSA.Create(2048);
+            _securityKey = new RsaSecurityKey(_rsa);
             _signingCredentials = new SigningCredentials(_securityKey, SecurityAlgorithms.RsaSha256);
         }
 
@@ -126,6 +154,41 @@ namespace TestHelpers
         /// Gets the audience
         /// </summary>
         public string Audience => _audience;
+
+        /// <summary>
+        /// Disposes the RSA cryptographic resources to prevent memory leaks.
+        /// IMPORTANT: Always call Dispose() or use 'using' statement when done with this instance.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Protected dispose pattern implementation
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // Dispose managed resources (RSA key)
+                    _rsa?.Dispose();
+                }
+
+                _disposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Finalizer to ensure RSA resources are released even if Dispose() is not called
+        /// </summary>
+        ~FakeJwtTokenGenerator()
+        {
+            Dispose(false);
+        }
     }
 }
 

@@ -130,6 +130,8 @@ services:
     container_name: ordering.api
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      # WARNING - DEVELOPMENT ONLY: Encrypt=False and TrustServerCertificate=True are INSECURE
+      # Production MUST use: Encrypt=True (default), TrustServerCertificate=False, and proper CA-signed certificates
       - "ConnectionStrings:OrderingConnectionString=Server=orderdb;TrustServerCertificate=True;MultiSubnetFailover=True;Encrypt=False;Database=OrderDatabase;User Id=sa;Password=SwN12345678;"
       - "EventBusSettings:HostAddress=amqp://guest:guest@rabbitmq:5672"
       - "Telemetry:ServiceName=Ordering.API"

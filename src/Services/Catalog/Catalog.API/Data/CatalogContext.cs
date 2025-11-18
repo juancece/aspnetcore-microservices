@@ -11,7 +11,8 @@ namespace Catalog.API.Data
             var database = client.GetDatabase(configuration.GetValue<string>("DatabaseSettings:DatabaseName"));
 
             Products = database.GetCollection<Product>(configuration.GetValue<string>("DatabaseSettings:CollectionName"));
-            CatalogContextSeed.SeedData(Products);
+            // NOTE: Seeding is now handled in Program.cs via SeedDatabaseAsync extension method
+            // to ensure proper async/await execution before the application starts handling requests
         }
         public IMongoCollection<Product> Products { get; }
     }

@@ -5,12 +5,17 @@ namespace Catalog.API.Data
 {
     public class CatalogContextSeed
     {
-        public static void SeedData(IMongoCollection<Product> productCollection)
+        /// <summary>
+        /// Seeds the database with initial data if it's empty.
+        /// NOTE: This method MUST be called with proper async/await from Program.cs,
+        /// NOT from a constructor, to ensure the async operation completes before requests are handled.
+        /// </summary>
+        public static async Task SeedDataAsync(IMongoCollection<Product> productCollection)
         {
-            bool existProduct = productCollection.Find(p => true).Any();
+            bool existProduct = await productCollection.Find(p => true).AnyAsync();
             if (!existProduct)
             {
-                productCollection.InsertMany(GetPreconfiguredProducts());
+                await productCollection.InsertManyAsync(GetPreconfiguredProducts());
             }
         }
 

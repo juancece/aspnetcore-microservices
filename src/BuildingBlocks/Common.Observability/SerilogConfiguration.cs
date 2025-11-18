@@ -30,29 +30,51 @@ namespace Common.Observability
                     .Enrich.WithMachineName()
                     .Enrich.WithEnvironmentName()
                     .Enrich.WithProperty("ServiceName", serviceName)
-                    .Enrich.WithProperty("Environment", environment)
-                    .WriteTo.Console(
-                        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {ServiceName} - {Message:lj}{NewLine}{Exception}",
-                        restrictedToMinimumLevel: LogEventLevel.Information)
-                    .WriteTo.Console(
-                        formatter: new CompactJsonFormatter(),
-                        restrictedToMinimumLevel: LogEventLevel.Debug);
+                    .Enrich.WithProperty("Environment", environment);
 
-                // Set minimum level based on environment
+                // LOGGING STRATEGY:
+                // - Development: Human-readable console output for local debugging
+                // - Production: Structured JSON output for centralized log aggregation (ELK, Splunk, etc.)
+                // Rationale: Developers need readable logs, but production systems need machine-parseable structured logs
                 if (context.HostingEnvironment.IsDevelopment())
                 {
+                    // Development: Human-readable format for console debugging
+                    configuration.WriteTo.Console(
+                        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {ServiceName} - {Message:lj}{NewLine}{Exception}",
+                        restrictedToMinimumLevel: LogEventLevel.Debug);
+                    
                     configuration.MinimumLevel.Debug();
                 }
                 else
                 {
+                    // Production: Compact JSON format for log aggregation systems
+                    // This enables structured queries, alerting, and correlation across distributed systems
+                    configuration.WriteTo.Console(
+                        formatter: new CompactJsonFormatter(),
+                        restrictedToMinimumLevel: LogEventLevel.Information);
+                    
                     configuration.MinimumLevel.Information();
                 }
 
-                // Override Microsoft log levels to reduce noise
+                // Override Microsoft log levels to reduce noise from framework internals
                 configuration
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-                    .MinimumLevel.Override("System", LogEventLevel.Warning);
+                    .MinimumLevel.Override("System", LogEventLevel.Warning)
+                    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning);
+                
+                // SECURITY: Filter sensitive data from logs
+                // Add Serilog.Expressions or custom filters to redact PII, tokens, passwords
+                configuration.Filter.ByExcluding(logEvent =>
+                {
+                    // Example: Exclude logs containing sensitive headers (can be extended)
+                    if (logEvent.Properties.TryGetValue("RequestHeaders", out var headers))
+                    {
+                        var headersStr = headers.ToString().ToLowerInvariant();
+                        return headersStr.Contains("authorization") || headersStr.Contains("cookie");
+                    }
+                    return false;
+                });
             });
 
             return builder;

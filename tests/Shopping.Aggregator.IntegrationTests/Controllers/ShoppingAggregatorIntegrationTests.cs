@@ -6,9 +6,14 @@ using Xunit;
 
 namespace Shopping.Aggregator.IntegrationTests.Controllers;
 
-public class ShoppingAggregatorIntegrationTests
+/// <summary>
+/// Integration tests for Shopping.Aggregator API
+/// NOTE: Implements IDisposable to properly clean up FakeJwtTokenGenerator RSA resources
+/// </summary>
+public class ShoppingAggregatorIntegrationTests : IDisposable
 {
     private readonly FakeJwtTokenGenerator _tokenGenerator;
+    private bool _disposed;
 
     public ShoppingAggregatorIntegrationTests()
     {
@@ -97,6 +102,29 @@ public class ShoppingAggregatorIntegrationTests
         // Should return 500 (Internal Server Error) when downstream services unavailable
         // This verifies error handling exists
         response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+    }
+
+    /// <summary>
+    /// Dispose pattern to clean up test resources (FakeJwtTokenGenerator RSA keys)
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                // Dispose managed resources
+                _tokenGenerator?.Dispose();
+            }
+
+            _disposed = true;
+        }
     }
 }
 
