@@ -15,6 +15,7 @@
     <PackageReference Include="MassTransit" Version="8.0.10" />
     <PackageReference Include="MassTransit.AspNetCore" Version="7.3.1" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.25" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
@@ -22,6 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Common.Auth\Common.Auth.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Common.Observability\Common.Observability.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Eventbus.Messages\Eventbus.Messages.csproj" />
   </ItemGroup>
 

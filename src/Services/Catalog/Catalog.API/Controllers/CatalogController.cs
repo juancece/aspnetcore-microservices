@@ -1,5 +1,7 @@
 ﻿using Catalog.API.Entities;
 using Catalog.API.Repositories;
+using Common.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -19,6 +21,7 @@ namespace Catalog.API.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous] // Keep existing endpoint public (non-breaking)
         [ProducesResponseType(typeof(IEnumerable<Product>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
@@ -27,6 +30,7 @@ namespace Catalog.API.Controllers
         }
 
         [HttpGet("{id:length(24)}", Name = "GetProduct")]
+        [AllowAnonymous] // Keep existing endpoint public (non-breaking)
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<Product>> GetProductById(string id)
@@ -42,6 +46,7 @@ namespace Catalog.API.Controllers
 
         [Route("[action]/{category}", Name = "GetProductByCategory")]
         [HttpGet]
+        [AllowAnonymous] // Keep existing endpoint public (non-breaking)
         [ProducesResponseType(typeof(IEnumerable<Product>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<Product>>> GetProductByCategory(string category)
         {
@@ -50,7 +55,10 @@ namespace Catalog.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = PolicyConstants.WriteCatalog)] // NEW: Protected write operation
         [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         public async Task<ActionResult<Product>> CreateProduct([FromBody] Product product)
         {
             await _repository.CreateProduct(product);
@@ -59,14 +67,20 @@ namespace Catalog.API.Controllers
         }
 
         [HttpPut]
+        [Authorize(Policy = PolicyConstants.WriteCatalog)] // NEW: Protected write operation
         [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         public async Task<IActionResult> UpdateProduct([FromBody] Product product)
         {
             return Ok(await _repository.UpdateProduct(product));
         }
 
         [HttpDelete("{id:length(24)}", Name = "DeleteProduct")]
+        [Authorize(Policy = PolicyConstants.WriteCatalog)] // NEW: Protected write operation
         [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         public async Task<IActionResult> DeleteProductById(string id)
         {
             return Ok(await _repository.DeleteProduct(id));

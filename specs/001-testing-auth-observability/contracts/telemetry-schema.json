@@ -1,0 +1,255 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Telemetry Configuration",
+  "description": "Configuration schema for OpenTelemetry and Serilog observability in ASP.NET Core microservices",
+  "type": "object",
+  "properties": {
+    "Telemetry": {
+      "type": "object",
+      "required": ["ServiceName"],
+      "properties": {
+        "ServiceName": {
+          "type": "string",
+          "description": "Service name (appears in traces/logs)",
+          "examples": ["Catalog.API", "Basket.API", "Ordering.API"]
+        },
+        "ServiceVersion": {
+          "type": "string",
+          "description": "Service version (for tracking deployments)",
+          "default": "1.0.0",
+          "examples": ["1.0.0", "2.1.3", "1.2.0-beta"]
+        },
+        "OtlpEndpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "OTLP exporter endpoint URL",
+          "default": "http://localhost:4317",
+          "examples": [
+            "http://localhost:4317",
+            "http://jaeger:4317",
+            "http://otel-collector:4317",
+            "https://otlp.nr-data.net:4317"
+          ]
+        },
+        "Protocol": {
+          "type": "string",
+          "enum": ["Grpc", "HttpProtobuf"],
+          "description": "OTLP exporter protocol",
+          "default": "Grpc"
+        },
+        "EnableTracing": {
+          "type": "boolean",
+          "description": "Enable distributed tracing",
+          "default": true
+        },
+        "EnableMetrics": {
+          "type": "boolean",
+          "description": "Enable metrics collection",
+          "default": true
+        },
+        "SamplingProbability": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Sampling probability (0.0 to 1.0). 1.0 = trace everything, 0.1 = trace 10%",
+          "default": 1.0,
+          "examples": [1.0, 0.5, 0.1, 0.01]
+        },
+        "ResourceAttributes": {
+          "type": "object",
+          "description": "Additional resource attributes (environment, region, etc.)",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "examples": [
+            {
+              "environment": "production",
+              "region": "us-east-1",
+              "deployment": "blue",
+              "cluster": "k8s-prod-01"
+            }
+          ]
+        }
+      }
+    },
+    "Serilog": {
+      "type": "object",
+      "properties": {
+        "Using": {
+          "type": "array",
+          "description": "Serilog assemblies to load",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "Serilog.Sinks.Console",
+              "Serilog.Enrichers.Environment",
+              "Serilog.Enrichers.CorrelationId"
+            ]
+          ]
+        },
+        "MinimumLevel": {
+          "type": "object",
+          "properties": {
+            "Default": {
+              "type": "string",
+              "enum": ["Verbose", "Debug", "Information", "Warning", "Error", "Fatal"],
+              "description": "Default minimum log level",
+              "default": "Information"
+            },
+            "Override": {
+              "type": "object",
+              "description": "Override log levels for specific namespaces",
+              "additionalProperties": {
+                "type": "string",
+                "enum": ["Verbose", "Debug", "Information", "Warning", "Error", "Fatal"]
+              },
+              "examples": [
+                {
+                  "Microsoft": "Warning",
+                  "Microsoft.AspNetCore": "Warning",
+                  "System": "Warning"
+                }
+              ]
+            }
+          }
+        },
+        "WriteTo": {
+          "type": "array",
+          "description": "Serilog sinks configuration",
+          "items": {
+            "type": "object",
+            "properties": {
+              "Name": {
+                "type": "string",
+                "description": "Sink name",
+                "examples": ["Console", "Seq", "ApplicationInsights"]
+              },
+              "Args": {
+                "type": "object",
+                "description": "Sink-specific arguments"
+              }
+            }
+          },
+          "examples": [
+            [
+              {
+                "Name": "Console",
+                "Args": {
+                  "formatter": "Serilog.Formatting.Json.JsonFormatter, Serilog"
+                }
+              },
+              {
+                "Name": "Seq",
+                "Args": {
+                  "serverUrl": "http://seq:5341"
+                }
+              }
+            ]
+          ]
+        },
+        "Enrich": {
+          "type": "array",
+          "description": "Log enrichers",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "FromLogContext",
+              "WithMachineName",
+              "WithEnvironmentName",
+              "WithCorrelationId"
+            ]
+          ]
+        },
+        "Properties": {
+          "type": "object",
+          "description": "Global log properties",
+          "additionalProperties": true,
+          "examples": [
+            {
+              "Application": "Catalog.API",
+              "Environment": "Production"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "Telemetry": {
+        "ServiceName": "Catalog.API",
+        "ServiceVersion": "1.0.0",
+        "OtlpEndpoint": "http://jaeger:4317",
+        "Protocol": "Grpc",
+        "EnableTracing": true,
+        "EnableMetrics": true,
+        "SamplingProbability": 1.0,
+        "ResourceAttributes": {
+          "environment": "production",
+          "region": "us-east-1"
+        }
+      },
+      "Serilog": {
+        "Using": ["Serilog.Sinks.Console"],
+        "MinimumLevel": {
+          "Default": "Information",
+          "Override": {
+            "Microsoft": "Warning",
+            "Microsoft.AspNetCore": "Warning",
+            "System": "Warning"
+          }
+        },
+        "WriteTo": [
+          {
+            "Name": "Console",
+            "Args": {
+              "formatter": "Serilog.Formatting.Json.JsonFormatter, Serilog"
+            }
+          }
+        ],
+        "Enrich": [
+          "FromLogContext",
+          "WithEnvironmentName",
+          "WithCorrelationId"
+        ],
+        "Properties": {
+          "Application": "Catalog.API"
+        }
+      }
+    },
+    {
+      "Telemetry": {
+        "ServiceName": "Ordering.API",
+        "ServiceVersion": "2.0.0",
+        "OtlpEndpoint": "https://otlp.nr-data.net:4317",
+        "Protocol": "Grpc",
+        "EnableTracing": true,
+        "EnableMetrics": true,
+        "SamplingProbability": 0.1,
+        "ResourceAttributes": {
+          "environment": "production",
+          "region": "eu-west-1",
+          "deployment": "green"
+        }
+      },
+      "Serilog": {
+        "MinimumLevel": {
+          "Default": "Information"
+        },
+        "WriteTo": [
+          {
+            "Name": "Console",
+            "Args": {
+              "formatter": "Serilog.Formatting.Json.JsonFormatter, Serilog"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+

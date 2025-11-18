@@ -1,5 +1,7 @@
-﻿using Discount.API.Entities;
+﻿using Common.Auth;
+using Discount.API.Entities;
 using Discount.API.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -17,6 +19,7 @@ namespace Discount.API.Controllers
         }
 
         [HttpGet("{productName}", Name = "GetDiscount")]
+        [AllowAnonymous] // Keep existing endpoint public (non-breaking)
         [ProducesResponseType(typeof(Coupon), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<Coupon>> GetDiscount(string productName)
         {
@@ -25,7 +28,10 @@ namespace Discount.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = PolicyConstants.WriteDiscount)] // NEW: Protected write operation
         [ProducesResponseType(typeof(Coupon), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         public async Task<ActionResult<Coupon>> CreateDiscount([FromBody] Coupon coupon)
         {
             await _repository.CreateDiscount(coupon);
@@ -33,14 +39,20 @@ namespace Discount.API.Controllers
         }
 
         [HttpPut]
+        [Authorize(Policy = PolicyConstants.WriteDiscount)] // NEW: Protected write operation
         [ProducesResponseType(typeof(Coupon), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         public async Task<ActionResult<Coupon>> UpdateDiscount([FromBody] Coupon coupon)
         {
             return Ok(await _repository.UpdateDiscount(coupon));
         }
 
         [HttpDelete]
+        [Authorize(Policy = PolicyConstants.WriteDiscount)] // NEW: Protected write operation
         [ProducesResponseType(typeof(Coupon), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         public async Task<ActionResult<bool>> DeleteDiscount(string productName)
         {
             return Ok(await _repository.DeleteDiscount(productName));

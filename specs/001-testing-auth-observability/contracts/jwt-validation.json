@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JWT Validation Configuration",
+  "description": "Configuration schema for JWT Bearer token validation in ASP.NET Core microservices",
+  "type": "object",
+  "properties": {
+    "Authentication": {
+      "type": "object",
+      "properties": {
+        "JwtBearer": {
+          "type": "object",
+          "required": ["Authority", "Audience"],
+          "properties": {
+            "Authority": {
+              "type": "string",
+              "format": "uri",
+              "description": "The OpenID Connect authority URL (IdP endpoint)",
+              "examples": [
+                "https://login.microsoftonline.com/{tenantId}/v2.0",
+                "https://your-idp.auth0.com/",
+                "https://accounts.google.com"
+              ]
+            },
+            "Audience": {
+              "type": "string",
+              "description": "Expected audience claim (API client ID or URL)",
+              "examples": [
+                "api://catalog-api",
+                "https://api.example.com",
+                "your-api-client-id"
+              ]
+            },
+            "RequireHttpsMetadata": {
+              "type": "boolean",
+              "description": "Whether to require HTTPS for metadata endpoint (false only for local dev)",
+              "default": true
+            },
+            "ValidIssuers": {
+              "type": "array",
+              "description": "List of acceptable token issuers",
+              "items": {
+                "type": "string",
+                "format": "uri"
+              },
+              "examples": [
+                [
+                  "https://login.microsoftonline.com/{tenantId}/v2.0",
+                  "https://sts.windows.net/{tenantId}/"
+                ]
+              ]
+            },
+            "ClockSkew": {
+              "type": "string",
+              "pattern": "^\\d{2}:\\d{2}:\\d{2}$",
+              "description": "Allowed clock skew for token expiration validation (HH:MM:SS format)",
+              "default": "00:05:00",
+              "examples": ["00:05:00", "00:02:00"]
+            },
+            "ValidateLifetime": {
+              "type": "boolean",
+              "description": "Whether to validate token lifetime (exp, nbf claims)",
+              "default": true
+            },
+            "ValidateIssuer": {
+              "type": "boolean",
+              "description": "Whether to validate the issuer claim",
+              "default": true
+            },
+            "ValidateAudience": {
+              "type": "boolean",
+              "description": "Whether to validate the audience claim",
+              "default": true
+            },
+            "ValidateIssuerSigningKey": {
+              "type": "boolean",
+              "description": "Whether to validate the token signature",
+              "default": true
+            },
+            "SaveToken": {
+              "type": "boolean",
+              "description": "Whether to save the token in AuthenticationProperties (for logging/debugging)",
+              "default": false
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "Authentication": {
+        "JwtBearer": {
+          "Authority": "https://login.microsoftonline.com/your-tenant-id/v2.0",
+          "Audience": "api://catalog-api",
+          "RequireHttpsMetadata": true,
+          "ValidIssuers": [
+            "https://login.microsoftonline.com/your-tenant-id/v2.0"
+          ],
+          "ClockSkew": "00:05:00",
+          "ValidateLifetime": true,
+          "SaveToken": false
+        }
+      }
+    },
+    {
+      "Authentication": {
+        "JwtBearer": {
+          "Authority": "https://fake-idp.local",
+          "Audience": "api://test-api",
+          "RequireHttpsMetadata": false,
+          "ValidIssuers": ["https://fake-idp.local"],
+          "ClockSkew": "00:05:00"
+        }
+      }
+    }
+  ]
+}
+

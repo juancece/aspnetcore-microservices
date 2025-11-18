@@ -1,6 +1,11 @@
+using Common.Auth;
+using Common.Observability;
 using Shopping.Aggregator.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Serilog for structured logging
+builder.AddSerilog();
 
 // Add services to the container.
 builder.Services.AddHttpClient<ICatalogService, CatalogService>(c =>
@@ -11,6 +16,19 @@ builder.Services.AddHttpClient<IBasketService, BasketService>(c =>
 
 builder.Services.AddHttpClient<IOrderService, OrderService>(c =>
     c.BaseAddress = new Uri(builder.Configuration["ApiSettings:OrderingUrl"]));
+
+// Authentication & Authorization
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(PolicyConstants.ReadShopping, policy =>
+        policy.RequireAuthenticatedUser()
+              .RequireClaim("scope", PolicyConstants.Scopes.ShoppingRead));
+});
+
+// Observability - OpenTelemetry distributed tracing
+builder.Services.AddObservability(builder.Configuration);
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -19,14 +37,22 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+// Serilog request logging (before other middleware)
+app.UseSerilogRequestLogging();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
+
+// Make the implicit Program class public for integration tests
+public partial class Program { }

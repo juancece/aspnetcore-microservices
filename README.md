@@ -60,6 +60,7 @@
 * **Ordering API -> http://host.docker.internal:8004/swagger/index.html**
 * **Shopping.Aggregator -> http://host.docker.internal:8005/swagger/index.html**
 * **API Gateway -> http://host.docker.internal:8010/Catalog**
+* **Jaeger Tracing UI -> http://host.docker.internal:16686**   -- Distributed tracing and observability
 * **Rabbit Management Dashboard -> http://host.docker.internal:15672**   -- guest/guest
 * **Portainer -> http://host.docker.internal:9000**   -- admin/admin1234
 * **pgAdmin PostgreSQL -> http://host.docker.internal:5050**   -- admin@aspnetrun.com/admin1234

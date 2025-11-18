@@ -15,6 +15,7 @@
 	<PackageReference Include="MassTransit" Version="8.0.10" />
 	<PackageReference Include="MassTransit.AspNetCore" Version="7.3.1" />
 	<PackageReference Include="MassTransit.RabbitMQ" Version="8.0.10" />
+	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.25" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -25,6 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Common.Auth\Common.Auth.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Common.Observability\Common.Observability.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Eventbus.Messages\Eventbus.Messages.csproj" />
     <ProjectReference Include="..\Order.Infrastructure\Ordering.Infrastructure.csproj" />
     <ProjectReference Include="..\Ordering.Application\Ordering.Application.csproj" />

@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Authorization Policies Configuration",
+  "description": "Configuration schema for policy-based authorization in ASP.NET Core microservices",
+  "type": "object",
+  "properties": {
+    "Authorization": {
+      "type": "object",
+      "properties": {
+        "Policies": {
+          "type": "array",
+          "description": "List of authorization policies",
+          "items": {
+            "type": "object",
+            "required": ["PolicyName"],
+            "properties": {
+              "PolicyName": {
+                "type": "string",
+                "description": "Unique policy name (used in [Authorize(Policy = 'PolicyName')])",
+                "examples": ["ReadCatalog", "WriteOrders", "AdminAccess"]
+              },
+              "Description": {
+                "type": "string",
+                "description": "Human-readable description of what this policy grants"
+              },
+              "RequiredClaims": {
+                "type": "object",
+                "description": "Required claims (claim type: claim value)",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "examples": [
+                  {
+                    "scope": "catalog.read",
+                    "tenant": "organization-id"
+                  }
+                ]
+              },
+              "RequiredRoles": {
+                "type": "array",
+                "description": "Required roles (any role in this list grants access)",
+                "items": {
+                  "type": "string"
+                },
+                "examples": [
+                  ["CatalogReader", "CatalogAdmin"],
+                  ["Admin"]
+                ]
+              },
+              "RequireAllClaims": {
+                "type": "boolean",
+                "description": "Whether ALL required claims must be present (true) or ANY (false)",
+                "default": true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "Authorization": {
+        "Policies": [
+          {
+            "PolicyName": "ReadCatalog",
+            "Description": "Read access to catalog products",
+            "RequiredClaims": {
+              "scope": "catalog.read"
+            },
+            "RequiredRoles": ["CatalogReader", "CatalogAdmin"],
+            "RequireAllClaims": true
+          },
+          {
+            "PolicyName": "WriteCatalog",
+            "Description": "Create/update/delete catalog products",
+            "RequiredClaims": {
+              "scope": "catalog.write"
+            },
+            "RequiredRoles": ["CatalogAdmin"],
+            "RequireAllClaims": true
+          },
+          {
+            "PolicyName": "ReadBasket",
+            "Description": "Read user shopping baskets",
+            "RequiredClaims": {
+              "scope": "basket.read"
+            },
+            "RequiredRoles": ["BasketReader", "BasketOwner"]
+          },
+          {
+            "PolicyName": "WriteBasket",
+            "Description": "Create/update user shopping baskets",
+            "RequiredClaims": {
+              "scope": "basket.write"
+            },
+            "RequiredRoles": ["BasketOwner"]
+          },
+          {
+            "PolicyName": "ReadOrders",
+            "Description": "Read orders",
+            "RequiredClaims": {
+              "scope": "orders.read"
+            },
+            "RequiredRoles": ["OrderReader", "OrderAdmin"]
+          },
+          {
+            "PolicyName": "WriteOrders",
+            "Description": "Create/update orders",
+            "RequiredClaims": {
+              "scope": "orders.write"
+            },
+            "RequiredRoles": ["OrderAdmin"],
+            "RequireAllClaims": true
+          },
+          {
+            "PolicyName": "AdminAccess",
+            "Description": "Full admin access to all resources",
+            "RequiredRoles": ["Admin", "SuperAdmin"]
+          }
+        ]
+      }
+    }
+  ]
+}
+

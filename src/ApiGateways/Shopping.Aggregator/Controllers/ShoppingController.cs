@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Common.Auth;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shopping.Aggregator.Models;
 using Shopping.Aggregator.Services;
@@ -22,6 +24,7 @@ namespace Shopping.Aggregator.Controllers
         }
 
         [HttpGet("{userName}", Name = "GetShopping")]
+        [AllowAnonymous] // Keep existing endpoint public (non-breaking)
         [ProducesResponseType(typeof(ShoppingModel), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<ShoppingModel>> GetShopping(string userName)
         {

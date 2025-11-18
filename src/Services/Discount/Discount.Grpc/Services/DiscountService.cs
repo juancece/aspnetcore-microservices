@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
+using Common.Auth;
 using Discount.Grpc.Entities;
 using Discount.Grpc.Protos;
 using Discount.Grpc.Repositories;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Discount.Grpc.Services
 {
+    [Authorize(Policy = PolicyConstants.WriteDiscount)] // NEW: Protect gRPC service
     public class DiscountService : DiscountProtoService.DiscountProtoServiceBase
     {
         private readonly IDiscountRepository _repository;

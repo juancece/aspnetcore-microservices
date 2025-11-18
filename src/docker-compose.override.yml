@@ -68,8 +68,12 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - "DatabaseSettings:ConnectionString=mongodb://catalogdb:27017"
+      - "Telemetry:ServiceName=Catalog.API"
+      - "Telemetry:OtlpEndpoint=http://jaeger:4317"
+      - "Authentication:JwtBearer:Enabled=false"
     depends_on:
       - catalogdb
+      - jaeger
     ports:
       - "8000:80"
 
@@ -81,9 +85,13 @@ services:
       - "CacheSettings:ConnectionString=basketdb:6379"
       - "GrpcSettings:DiscountUrl=http://discount.grpc"
       - "EventBusSettings:HostAddress=amqp://guest:guest@rabbitmq:5672"
+      - "Telemetry:ServiceName=Basket.API"
+      - "Telemetry:OtlpEndpoint=http://jaeger:4317"
+      - "Authentication:JwtBearer:Enabled=false"
     depends_on:
       - basketdb
-      - rabbitmq    
+      - rabbitmq
+      - jaeger    
     ports:
       - "8001:80"
 
@@ -93,8 +101,12 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - "DatabaseSettings:ConnectionString=Server=discountdb;Port=5432;Database=DiscountDb;User Id=admin;Password=admin1234;"
+      - "Telemetry:ServiceName=Discount.API"
+      - "Telemetry:OtlpEndpoint=http://jaeger:4317"
+      - "Authentication:JwtBearer:Enabled=false"
     depends_on:
       - discountdb
+      - jaeger
     ports:
       - "8002:80"
 
@@ -104,8 +116,12 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - "DatabaseSettings:ConnectionString=Server=discountdb;Port=5432;Database=DiscountDb;User Id=admin;Password=admin1234;"
+      - "Telemetry:ServiceName=Discount.Grpc"
+      - "Telemetry:OtlpEndpoint=http://jaeger:4317"
+      - "Authentication:JwtBearer:Enabled=false"
     depends_on:
       - discountdb
+      - jaeger
     ports:
       - "8003:80"
 
@@ -114,11 +130,15 @@ services:
     container_name: ordering.api
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - "ConnectionStrings:OrderingConnectionString=Server=PC-EMRE;TrustServerCertificate=True;MultiSubnetFailover=True;Encrypt=False;Database=OrderDatabase;User Id=sa;Password=SwN12345678;"
+      - "ConnectionStrings:OrderingConnectionString=Server=orderdb;TrustServerCertificate=True;MultiSubnetFailover=True;Encrypt=False;Database=OrderDatabase;User Id=sa;Password=SwN12345678;"
       - "EventBusSettings:HostAddress=amqp://guest:guest@rabbitmq:5672"
+      - "Telemetry:ServiceName=Ordering.API"
+      - "Telemetry:OtlpEndpoint=http://jaeger:4317"
+      - "Authentication:JwtBearer:Enabled=false"
     depends_on:
       - orderdb
       - rabbitmq
+      - jaeger
     ports:
       - "8004:80"
 
@@ -143,11 +163,15 @@ services:
       - "ApiSettings:CatalogUrl=http://catalog.api"
       - "ApiSettings:BasketUrl=http://basket.api"
       - "ApiSettings:OrderingUrl=http://ordering.api"
+      - "Telemetry:ServiceName=Shopping.Aggregator"
+      - "Telemetry:OtlpEndpoint=http://jaeger:4317"
+      - "Authentication:JwtBearer:Enabled=false"
     depends_on:
       - catalog.api
       - basket.api
       - discount.api
       - ordering.api
+      - jaeger
     ports:
       - "8005:80"
 
